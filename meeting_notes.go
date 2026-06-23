@@ -8,7 +8,7 @@ type MeetingNotesService struct {
 }
 
 // Query queries meeting notes.
-func (s *MeetingNotesService) Query(ctx context.Context, body Object) (*MeetingNotesResponse, error) {
+func (s *MeetingNotesService) Query(ctx context.Context, body any) (*MeetingNotesResponse, error) {
 	var out MeetingNotesResponse
 	err := s.client.post(ctx, apiPath("v1", "blocks", "meeting_notes", "query"), body, &out)
 	return &out, err

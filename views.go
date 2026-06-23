@@ -27,56 +27,46 @@ func (s *ViewsService) List(ctx context.Context, params *ListViewsParams) (*List
 			q[key] = values
 		}
 	}
-	var out ListResponse
-	err := s.client.get(ctx, apiPath("v1", "views"), q, &out)
-	return &out, err
+	return s.client.getList(ctx, apiPath("v1", "views"), q)
 }
 
 // Create creates a view.
-func (s *ViewsService) Create(ctx context.Context, body Object) (View, error) {
-	var out Object
-	err := s.client.post(ctx, apiPath("v1", "views"), body, &out)
+func (s *ViewsService) Create(ctx context.Context, body any) (View, error) {
+	out, err := s.client.postObject(ctx, apiPath("v1", "views"), body)
 	return View(out), err
 }
 
 // Get retrieves a view.
 func (s *ViewsService) Get(ctx context.Context, viewID string) (View, error) {
-	var out Object
-	err := s.client.get(ctx, apiPath("v1", "views", viewID), nil, &out)
+	out, err := s.client.getObject(ctx, apiPath("v1", "views", viewID), nil)
 	return View(out), err
 }
 
 // Update updates a view.
-func (s *ViewsService) Update(ctx context.Context, viewID string, body Object) (View, error) {
-	var out Object
-	err := s.client.patch(ctx, apiPath("v1", "views", viewID), body, &out)
+func (s *ViewsService) Update(ctx context.Context, viewID string, body any) (View, error) {
+	out, err := s.client.patchObject(ctx, apiPath("v1", "views", viewID), body)
 	return View(out), err
 }
 
 // Delete deletes a view.
 func (s *ViewsService) Delete(ctx context.Context, viewID string) (View, error) {
-	var out Object
-	err := s.client.delete(ctx, apiPath("v1", "views", viewID), &out)
+	out, err := s.client.deleteObject(ctx, apiPath("v1", "views", viewID))
 	return View(out), err
 }
 
 // CreateQuery creates a view query.
-func (s *ViewsService) CreateQuery(ctx context.Context, viewID string, body Object) (ViewQuery, error) {
-	var out Object
-	err := s.client.post(ctx, apiPath("v1", "views", viewID, "queries"), body, &out)
+func (s *ViewsService) CreateQuery(ctx context.Context, viewID string, body any) (ViewQuery, error) {
+	out, err := s.client.postObject(ctx, apiPath("v1", "views", viewID, "queries"), body)
 	return ViewQuery(out), err
 }
 
 // GetQueryResults returns paginated results for a view query.
 func (s *ViewsService) GetQueryResults(ctx context.Context, viewID, queryID string, params *PaginationParams) (*ListResponse, error) {
-	var out ListResponse
-	err := s.client.get(ctx, apiPath("v1", "views", viewID, "queries", queryID), paginationValues(params), &out)
-	return &out, err
+	return s.client.getList(ctx, apiPath("v1", "views", viewID, "queries", queryID), paginationValues(params))
 }
 
 // DeleteQuery deletes a view query.
 func (s *ViewsService) DeleteQuery(ctx context.Context, viewID, queryID string) (ViewQuery, error) {
-	var out Object
-	err := s.client.delete(ctx, apiPath("v1", "views", viewID, "queries", queryID), &out)
+	out, err := s.client.deleteObject(ctx, apiPath("v1", "views", viewID, "queries", queryID))
 	return ViewQuery(out), err
 }

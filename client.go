@@ -184,6 +184,42 @@ func (c *Client) delete(ctx context.Context, path string, out any) error {
 	return c.sendJSON(ctx, http.MethodDelete, path, nil, nil, out)
 }
 
+func (c *Client) getObject(ctx context.Context, path string, query url.Values) (Object, error) {
+	var out Object
+	err := c.get(ctx, path, query, &out)
+	return out, err
+}
+
+func (c *Client) postObject(ctx context.Context, path string, body any) (Object, error) {
+	var out Object
+	err := c.post(ctx, path, body, &out)
+	return out, err
+}
+
+func (c *Client) patchObject(ctx context.Context, path string, body any) (Object, error) {
+	var out Object
+	err := c.patch(ctx, path, body, &out)
+	return out, err
+}
+
+func (c *Client) deleteObject(ctx context.Context, path string) (Object, error) {
+	var out Object
+	err := c.delete(ctx, path, &out)
+	return out, err
+}
+
+func (c *Client) getList(ctx context.Context, path string, query url.Values) (*ListResponse, error) {
+	var out ListResponse
+	err := c.get(ctx, path, query, &out)
+	return &out, err
+}
+
+func (c *Client) postList(ctx context.Context, path string, query url.Values, body any) (*ListResponse, error) {
+	var out ListResponse
+	err := c.sendJSON(ctx, http.MethodPost, path, query, body, &out)
+	return &out, err
+}
+
 func (c *Client) postBasic(ctx context.Context, path, clientID, clientSecret string, body any, out any) error {
 	req, err := c.newJSONRequest(ctx, http.MethodPost, path, nil, body)
 	if err != nil {

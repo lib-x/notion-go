@@ -25,7 +25,5 @@ func (s *CustomEmojisService) List(ctx context.Context, params *ListCustomEmojis
 			q[key] = values
 		}
 	}
-	var out ListResponse
-	err := s.client.get(ctx, apiPath("v1", "custom_emojis"), q, &out)
-	return &out, err
+	return s.client.getList(ctx, apiPath("v1", "custom_emojis"), q)
 }

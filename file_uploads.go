@@ -38,8 +38,7 @@ type UploadFileRequest struct {
 
 // Create creates a file upload object.
 func (s *FileUploadsService) Create(ctx context.Context, body CreateFileUploadRequest) (FileUpload, error) {
-	var out Object
-	err := s.client.post(ctx, apiPath("v1", "file_uploads"), body, &out)
+	out, err := s.client.postObject(ctx, apiPath("v1", "file_uploads"), body)
 	return FileUpload(out), err
 }
 
@@ -52,9 +51,7 @@ func (s *FileUploadsService) List(ctx context.Context, params *ListFileUploadsPa
 			q[key] = values
 		}
 	}
-	var out ListResponse
-	err := s.client.get(ctx, apiPath("v1", "file_uploads"), q, &out)
-	return &out, err
+	return s.client.getList(ctx, apiPath("v1", "file_uploads"), q)
 }
 
 // Send uploads file bytes for a file upload object.
@@ -89,14 +86,12 @@ func (s *FileUploadsService) Send(ctx context.Context, fileUploadID string, req 
 
 // Complete completes a multi-part file upload.
 func (s *FileUploadsService) Complete(ctx context.Context, fileUploadID string) (FileUpload, error) {
-	var out Object
-	err := s.client.post(ctx, apiPath("v1", "file_uploads", fileUploadID, "complete"), nil, &out)
+	out, err := s.client.postObject(ctx, apiPath("v1", "file_uploads", fileUploadID, "complete"), nil)
 	return FileUpload(out), err
 }
 
 // Get retrieves a file upload object.
 func (s *FileUploadsService) Get(ctx context.Context, fileUploadID string) (FileUpload, error) {
-	var out Object
-	err := s.client.get(ctx, apiPath("v1", "file_uploads", fileUploadID), nil, &out)
+	out, err := s.client.getObject(ctx, apiPath("v1", "file_uploads", fileUploadID), nil)
 	return FileUpload(out), err
 }

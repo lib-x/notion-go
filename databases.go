@@ -12,21 +12,18 @@ type DatabasesService struct {
 
 // Get retrieves a database.
 func (s *DatabasesService) Get(ctx context.Context, databaseID string) (Database, error) {
-	var out Object
-	err := s.client.get(ctx, apiPath("v1", "databases", databaseID), nil, &out)
+	out, err := s.client.getObject(ctx, apiPath("v1", "databases", databaseID), nil)
 	return Database(out), err
 }
 
 // Update updates a database.
-func (s *DatabasesService) Update(ctx context.Context, databaseID string, body Object) (Database, error) {
-	var out Object
-	err := s.client.patch(ctx, apiPath("v1", "databases", databaseID), body, &out)
+func (s *DatabasesService) Update(ctx context.Context, databaseID string, body any) (Database, error) {
+	out, err := s.client.patchObject(ctx, apiPath("v1", "databases", databaseID), body)
 	return Database(out), err
 }
 
 // Create creates a database.
-func (s *DatabasesService) Create(ctx context.Context, body Object) (Database, error) {
-	var out Object
-	err := s.client.post(ctx, apiPath("v1", "databases"), body, &out)
+func (s *DatabasesService) Create(ctx context.Context, body any) (Database, error) {
+	out, err := s.client.postObject(ctx, apiPath("v1", "databases"), body)
 	return Database(out), err
 }

@@ -41,7 +41,9 @@ func main() {
 
 ## API Design
 
-The SDK exposes stable service methods for every Notion REST endpoint and keeps Notion resources as `notion.Object` (`map[string]any`). Notion objects are highly polymorphic and evolve by `type` fields, so this keeps the SDK forward-compatible while still providing typed transport behavior for requests, pagination, OAuth, uploads, markdown responses, and errors.
+The SDK exposes stable service methods for every Notion REST endpoint. Common request structures such as parents, rich text, page properties, blocks, data source filters, and sorts have typed builders. The lower-level `notion.Object` (`map[string]any`) remains available as an escape hatch for newly released Notion fields or less common object shapes.
+
+List responses can also be decoded into caller-owned generic result types with `DecodeList[T]`, `CollectPaginatedDecode[T]`, or `CollectPaginatedAs[T]`.
 
 Use `client.Do` when Notion adds a new endpoint before this SDK has a convenience method.
 
@@ -85,25 +87,17 @@ For endpoints with extra filters, keep those filters in the closure and only var
 ## Create a Page
 
 ```go
-page, err := client.Pages.Create(ctx, notion.Object{
-	"parent": notion.Object{"page_id": "parent-page-id"},
-	"properties": notion.Object{
-		"title": notion.Object{
-			"title": []notion.Object{
-				{"text": notion.Object{"content": "Roadmap"}},
-			},
-		},
+page, err := client.Pages.Create(ctx, notion.CreatePageRequest{
+	Parent: notion.PageParent("parent-page-id"),
+	Properties: notion.PageProperties{
+		"Name":   notion.TitleProperty(notion.Text("Roadmap")),
+		"Status": notion.StatusPropertyName("In progress"),
+		"Due":    notion.DateProperty(notion.Date{Start: "2026-06-23"}),
 	},
-	"children": []notion.Object{
-		{
-			"object": "block",
-			"type":   "paragraph",
-			"paragraph": notion.Object{
-				"rich_text": []notion.Object{
-					{"type": "text", "text": notion.Object{"content": "Hello from Go"}},
-				},
-			},
-		},
+	Children: []notion.BlockRequest{
+		notion.Heading1(notion.Text("Plan")),
+		notion.Paragraph(notion.Text("Hello from Go")),
+		notion.ToDo(false, notion.Text("Ship typed helpers")),
 	},
 })
 ```
@@ -111,16 +105,55 @@ page, err := client.Pages.Create(ctx, notion.Object{
 ## Query a Data Source
 
 ```go
-results, err := client.DataSources.Query(ctx, "data-source-id", notion.QueryRequest{
-	"filter": notion.Object{
-		"property": "Status",
-		"status": notion.Object{
-			"equals": "In progress",
-		},
+results, err := client.DataSources.Query(ctx, "data-source-id", notion.DataSourceQueryRequest{
+	Filter: notion.And(
+		notion.TitleContains("Name", "roadmap"),
+		notion.StatusEquals("Status", "In progress"),
+	),
+	Sorts: []notion.Sort{
+		notion.PropertySort("Due", notion.Descending),
 	},
-	"page_size": 25,
+	PageSize: 25,
 }, nil)
 ```
+
+## Typed List Results
+
+```go
+type PageSummary struct {
+	ID     string `json:"id"`
+	Object string `json:"object"`
+}
+
+list, err := client.DataSources.Query(ctx, "data-source-id", notion.DataSourceQueryRequest{
+	PageSize: 50,
+}, nil)
+if err != nil {
+	return err
+}
+
+typed, err := notion.DecodeList[PageSummary](list)
+if err != nil {
+	return err
+}
+
+for _, page := range typed.Results {
+	fmt.Println(page.ID)
+}
+```
+
+For paginated endpoints:
+
+```go
+pages, err := notion.CollectPaginatedDecode[PageSummary](ctx, func(ctx context.Context, cursor string) (*notion.ListResponse, error) {
+	return client.DataSources.Query(ctx, "data-source-id", notion.DataSourceQueryRequest{
+		StartCursor: cursor,
+		PageSize:    100,
+	}, nil)
+})
+```
+
+The typed builders intentionally do not try to cover every Notion union branch on day one. Use `notion.RawProperty`, `notion.RawBlock`, `notion.RawFilter`, or plain `notion.Object` request bodies when you need an API shape that is not modeled yet.
 
 ## Markdown Content
 

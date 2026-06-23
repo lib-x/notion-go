@@ -23,33 +23,28 @@ type ListDataSourceTemplatesParams struct {
 
 // Get retrieves a data source.
 func (s *DataSourcesService) Get(ctx context.Context, dataSourceID string) (DataSource, error) {
-	var out Object
-	err := s.client.get(ctx, apiPath("v1", "data_sources", dataSourceID), nil, &out)
+	out, err := s.client.getObject(ctx, apiPath("v1", "data_sources", dataSourceID), nil)
 	return DataSource(out), err
 }
 
 // Update updates a data source.
-func (s *DataSourcesService) Update(ctx context.Context, dataSourceID string, body Object) (DataSource, error) {
-	var out Object
-	err := s.client.patch(ctx, apiPath("v1", "data_sources", dataSourceID), body, &out)
+func (s *DataSourcesService) Update(ctx context.Context, dataSourceID string, body any) (DataSource, error) {
+	out, err := s.client.patchObject(ctx, apiPath("v1", "data_sources", dataSourceID), body)
 	return DataSource(out), err
 }
 
 // Query queries a data source.
-func (s *DataSourcesService) Query(ctx context.Context, dataSourceID string, body QueryRequest, params *QueryDataSourceParams) (*ListResponse, error) {
+func (s *DataSourcesService) Query(ctx context.Context, dataSourceID string, body any, params *QueryDataSourceParams) (*ListResponse, error) {
 	q := make(url.Values)
 	if params != nil {
 		addStrings(q, "filter_properties", params.FilterProperties)
 	}
-	var out ListResponse
-	err := s.client.sendJSON(ctx, "POST", apiPath("v1", "data_sources", dataSourceID, "query"), q, Object(body), &out)
-	return &out, err
+	return s.client.postList(ctx, apiPath("v1", "data_sources", dataSourceID, "query"), q, body)
 }
 
 // Create creates a data source.
-func (s *DataSourcesService) Create(ctx context.Context, body Object) (DataSource, error) {
-	var out Object
-	err := s.client.post(ctx, apiPath("v1", "data_sources"), body, &out)
+func (s *DataSourcesService) Create(ctx context.Context, body any) (DataSource, error) {
+	out, err := s.client.postObject(ctx, apiPath("v1", "data_sources"), body)
 	return DataSource(out), err
 }
 
@@ -62,7 +57,5 @@ func (s *DataSourcesService) ListTemplates(ctx context.Context, dataSourceID str
 			q[key] = values
 		}
 	}
-	var out ListResponse
-	err := s.client.get(ctx, apiPath("v1", "data_sources", dataSourceID, "templates"), q, &out)
-	return &out, err
+	return s.client.getList(ctx, apiPath("v1", "data_sources", dataSourceID, "templates"), q)
 }

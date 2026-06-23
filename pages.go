@@ -21,9 +21,8 @@ type RetrieveMarkdownParams struct {
 }
 
 // Create creates a page.
-func (s *PagesService) Create(ctx context.Context, body Object) (Page, error) {
-	var out Object
-	err := s.client.post(ctx, apiPath("v1", "pages"), body, &out)
+func (s *PagesService) Create(ctx context.Context, body any) (Page, error) {
+	out, err := s.client.postObject(ctx, apiPath("v1", "pages"), body)
 	return Page(out), err
 }
 
@@ -33,29 +32,25 @@ func (s *PagesService) Get(ctx context.Context, pageID string, params *GetPagePa
 	if params != nil {
 		addStrings(q, "filter_properties", params.FilterProperties)
 	}
-	var out Object
-	err := s.client.get(ctx, apiPath("v1", "pages", pageID), q, &out)
+	out, err := s.client.getObject(ctx, apiPath("v1", "pages", pageID), q)
 	return Page(out), err
 }
 
 // Update updates a page.
-func (s *PagesService) Update(ctx context.Context, pageID string, body Object) (Page, error) {
-	var out Object
-	err := s.client.patch(ctx, apiPath("v1", "pages", pageID), body, &out)
+func (s *PagesService) Update(ctx context.Context, pageID string, body any) (Page, error) {
+	out, err := s.client.patchObject(ctx, apiPath("v1", "pages", pageID), body)
 	return Page(out), err
 }
 
 // Move moves a page.
-func (s *PagesService) Move(ctx context.Context, pageID string, body Object) (Page, error) {
-	var out Object
-	err := s.client.post(ctx, apiPath("v1", "pages", pageID, "move"), body, &out)
+func (s *PagesService) Move(ctx context.Context, pageID string, body any) (Page, error) {
+	out, err := s.client.postObject(ctx, apiPath("v1", "pages", pageID, "move"), body)
 	return Page(out), err
 }
 
 // GetProperty retrieves a page property item.
 func (s *PagesService) GetProperty(ctx context.Context, pageID, propertyID string, params *PaginationParams) (PageProperty, error) {
-	var out Object
-	err := s.client.get(ctx, apiPath("v1", "pages", pageID, "properties", propertyID), paginationValues(params), &out)
+	out, err := s.client.getObject(ctx, apiPath("v1", "pages", pageID, "properties", propertyID), paginationValues(params))
 	return PageProperty(out), err
 }
 
@@ -71,7 +66,7 @@ func (s *PagesService) RetrieveMarkdown(ctx context.Context, pageID string, para
 }
 
 // UpdateMarkdown updates a page's content using Notion's markdown mutation API.
-func (s *PagesService) UpdateMarkdown(ctx context.Context, pageID string, body Object) (*MarkdownResponse, error) {
+func (s *PagesService) UpdateMarkdown(ctx context.Context, pageID string, body any) (*MarkdownResponse, error) {
 	var out MarkdownResponse
 	err := s.client.patch(ctx, apiPath("v1", "pages", pageID, "markdown"), body, &out)
 	return &out, err

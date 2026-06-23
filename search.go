@@ -9,7 +9,5 @@ type SearchService struct {
 
 // Do searches pages and databases by title.
 func (s *SearchService) Do(ctx context.Context, body SearchRequest) (*ListResponse, error) {
-	var out ListResponse
-	err := s.client.post(ctx, apiPath("v1", "search"), Object(body), &out)
-	return &out, err
+	return s.client.postList(ctx, apiPath("v1", "search"), nil, Object(body))
 }
